@@ -70,8 +70,7 @@ wss.on("connection", (ws, req) => {
     r.displays.add(ws);
     // Send current images to new display
     if (r.images.length > 0) {
-      const imagesData = JSON.stringify(r.images);
-      ws.send(imagesData);
+      ws.send(JSON.stringify({ images: r.images, metadata: r.metadata }));
     }
   } else {
     r.senders.add(ws);
@@ -80,28 +79,52 @@ wss.on("connection", (ws, req) => {
   console.log(`[${room}] ${role} connected (${r.displays.size} displays, ${r.senders.size} senders)`);
 
   ws.on("message", (data) => {
-    // Store image and broadcast all images from senders to all displays in the same room
     const msg = data.toString();
+
+    // Handle clear request
+    try {
+      const payload = JSON.parse(msg);
+      if (payload && payload.clear) {
+        r.images = [];
+        r.metadata = [];
+        fs.writeFileSync(path.join(__dirname, 'metadata.json'), JSON.stringify(r.metadata, null, 2));
+        for (const display of r.displays) {
+          if (display.readyState === 1) display.send(JSON.stringify({ images: [], metadata: [] }));
+        }
+        return;
+      }
+    } catch {
+      // Not JSON, treat as image data
+    }
+
+    // Store image and broadcast all images from senders to all displays in the same room
     let imageObj;
     try {
       imageObj = JSON.parse(msg);
     } catch (e) {
-      // Fallback for old format
-      imageObj = { image: msg, description: '', name: null };
+      console.warn(`[${room}] failed to parse message as JSON, skipping`);
+      return;
     }
+
+    // Validate that the image field is a proper data URL
+    if (!imageObj.image || typeof imageObj.image !== 'string' || !imageObj.image.startsWith('data:')) {
+      console.warn(`[${room}] message missing valid image data URL, skipping`);
+      return;
+    }
+
     r.images.push(imageObj.image);
-    r.metadata.push({ description: imageObj.description, name: imageObj.name });
+    r.metadata.push({ description: imageObj.description || '', name: imageObj.name || null });
     if (r.images.length > 50) {
-      r.images.shift(); // remove oldest
+      r.images.shift();
       r.metadata.shift();
     }
-    const sizeKb = imageObj.image ? (imageObj.image.length / 1024).toFixed(1) : "0.0";
-    console.log(`[${room}] stored image (${sizeKb} KB) payload:`, msg.slice(0, 120));
+    const sizeKb = (imageObj.image.length / 1024).toFixed(1);
+    console.log(`[${room}] stored image (${sizeKb} KB), desc: "${imageObj.description}", name: "${imageObj.name}"`);
     // Write metadata to file
     fs.writeFileSync(path.join(__dirname, 'metadata.json'), JSON.stringify(r.metadata, null, 2));
-    const imagesData = JSON.stringify(r.images);
+    const broadcastData = JSON.stringify({ images: r.images, metadata: r.metadata });
     for (const display of r.displays) {
-      if (display.readyState === 1) display.send(imagesData);
+      if (display.readyState === 1) display.send(broadcastData);
     }
   });
 

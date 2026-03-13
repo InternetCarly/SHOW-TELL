@@ -89,7 +89,7 @@
     #fullscreen .nav.next { right: 16px; }
     #fullscreen .close {
       position: absolute;
-      top: 16px;
+      bottom: 16px;
       right: 16px;
       background: rgba(0,0,0,0.5);
       border: none;
@@ -112,15 +112,61 @@
       display: block;
     }
 
+    #imageCount {
+      position: fixed;
+      top: 16px;
+      right: 72px;
+      font-size: 13px;
+      opacity: 0.5;
+      color: #fff;
+      z-index: 10;
+      font-family: monospace;
+    }
+    #clearWrapper {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 60px;
+      height: 60px;
+      z-index: 30;
+    }
+    #clearBtn {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 50px;
+      height: 50px;
+      background: #c00;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 11px;
+      padding: 4px;
+      opacity: 0;
+      transform: translate(24px, -24px) scale(0);
+      transition: transform 0.1s ease, opacity 0.2s ease;
+      text-align: center;
+      line-height: 1.2;
+    }
+    #clearWrapper:hover #clearBtn {
+      opacity: 1;
+      transform: translate(0, 0) scale(1);
+    }
+
   </style>
 </head>
 <body>
   <div id="status" class="disconnected">disconnected</div>
+  <div id="imageCount">0/50</div>
+  <div id="clearWrapper" aria-label="Clear all images">
+    <button id="clearBtn">CLEAR ALL IMAGES</button>
+  </div>
   <div id="waiting">Waiting for images...</div>
   <div id="images"></div>
 
   <div id="fullscreen">
-    <button class="close" aria-label="Close">✕</button>
+    <button class="close" aria-label="Close">CLOSE</button>
     <button class="nav prev" aria-label="Previous">‹</button>
     <img id="fullscreenImage" alt="Fullscreen image">
     <div class="meta" id="fullscreenMeta"></div>
@@ -139,6 +185,7 @@
     const statusEl = document.getElementById("status");
     const waitingEl = document.getElementById("waiting");
     const imagesEl = document.getElementById("images");
+    const imageCountEl = document.getElementById("imageCount");
     const qrContainer = document.getElementById("qr-container");
     const fullscreen = document.getElementById("fullscreen");
     const fullscreenImage = document.getElementById("fullscreenImage");
@@ -146,6 +193,9 @@
     const prevBtn = document.querySelector("#fullscreen .nav.prev");
     const nextBtn = document.querySelector("#fullscreen .nav.next");
     const closeBtn = document.querySelector("#fullscreen .close");
+    const clearBtn = document.getElementById("clearBtn");
+
+    let ws = null;
 
         // Generate QR code for send page
     const sendUrl = `${location.protocol}//${location.host}/send.html?server=${SERVER}&room=${room}`;
@@ -168,19 +218,28 @@
     let metadata = [];
     let currentIndex = 0;
     let rotateTimer = null;
+    let clearPending = false;
 
-    function loadMetadata() {
-      fetch('/metadata.json')
-        .then(r => r.json())
-        .then(data => {
-          metadata = Array.isArray(data) ? data : [];
-        })
-        .catch(() => {
-          metadata = [];
+    function renderImages() {
+      imageCountEl.textContent = `${images.length}/50`;
+      imagesEl.innerHTML = '';
+      if (images.length === 0) {
+        waitingEl.style.display = "block";
+      } else {
+        waitingEl.style.display = "none";
+        images.forEach((imgSrc, idx) => {
+          const img = document.createElement('img');
+          img.className = 'image-item';
+          img.alt = 'Received image';
+          img.src = imgSrc;
+          img.addEventListener('click', () => showFullscreen(idx));
+          imagesEl.appendChild(img);
         });
+      }
     }
 
     function showFullscreen(index) {
+      if (images.length === 0) return;
       if (index < 0) index = images.length - 1;
       if (index >= images.length) index = 0;
       currentIndex = index;
@@ -190,11 +249,13 @@
       const name = meta.name ? `submitted by ${meta.name}` : '';
       fullscreenMeta.textContent = [desc, name].filter(Boolean).join('\n');
       fullscreen.style.display = 'flex';
+      document.getElementById('clearWrapper').style.display = 'none';
       resetRotateTimer();
     }
 
     function hideFullscreen() {
       fullscreen.style.display = 'none';
+      document.getElementById('clearWrapper').style.display = 'block';
       clearRotateTimer();
     }
 
@@ -213,27 +274,37 @@
     }
 
     function connect() {
-      const ws = new WebSocket(`${SERVER}?room=${room}&role=display`);
+      if (ws && ws.readyState === 1) ws.close();
+      ws = new WebSocket(`${SERVER}?room=${room}&role=display`);
 
       ws.onopen = () => {
         statusEl.textContent = `connected (room: ${room})`;
         statusEl.className = "connected";
-        loadMetadata();
+        if (clearPending) {
+          // Reconnected with a pending clear — re-send so server confirms and resets the flag
+          ws.send(JSON.stringify({ clear: true }));
+        }
       };
 
       ws.onmessage = (e) => {
         try {
-          images = JSON.parse(e.data);
-          imagesEl.innerHTML = '';
-          images.forEach((imgSrc, idx) => {
-            const img = document.createElement('img');
-            img.className = 'image-item';
-            img.alt = 'Received image';
-            img.src = imgSrc;
-            img.addEventListener('click', () => showFullscreen(idx));
-            imagesEl.appendChild(img);
-          });
-          waitingEl.style.display = images.length ? "none" : "block";
+          const data = JSON.parse(e.data);
+          // New format: { images: [...], metadata: [...] }
+          if (data && Array.isArray(data.images)) {
+            if (clearPending && data.images.length > 0) {
+              // Stale broadcast arrived after a clear — re-send clear and discard
+              if (ws && ws.readyState === 1) ws.send(JSON.stringify({ clear: true }));
+              return;
+            }
+            if (data.images.length === 0) clearPending = false;
+            images = data.images;
+            metadata = Array.isArray(data.metadata) ? data.metadata : [];
+          } else if (Array.isArray(data)) {
+            // Backwards compat: old format was just an array of image URLs
+            if (clearPending && data.length > 0) return;
+            images = data;
+          }
+          renderImages();
         } catch (err) {
           console.error('Failed to parse images:', err);
         }
@@ -261,6 +332,19 @@
     fullscreen.addEventListener('click', (e) => {
       if (e.target === fullscreen) hideFullscreen();
     });
+
+    function clearAllImages() {
+      clearPending = true;
+      images = [];
+      metadata = [];
+      renderImages();
+      hideFullscreen();
+      if (ws && ws.readyState === 1) {
+        ws.send(JSON.stringify({ clear: true }));
+      }
+    }
+
+    clearBtn.addEventListener('click', clearAllImages);
 
     connect();
   </script>
