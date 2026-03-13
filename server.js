@@ -1,7 +1,25 @@
 const { WebSocketServer } = require("ws");
+const http = require("http");
 
 const PORT = process.env.PORT || 8080;
-const wss = new WebSocketServer({ port: PORT });
+
+// Create an HTTP server
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/html' });
+  res.end(`
+    <!DOCTYPE html>
+    <html>
+    <head><title>WebSocket Server</title></head>
+    <body>
+      <h1>WebSocket server is running</h1>
+      <p>Ready for connections on port ${PORT}</p>
+    </body>
+    </html>
+  `);
+});
+
+// Attach WebSocket server to the HTTP server
+const wss = new WebSocketServer({ server });
 
 // Track clients by room and role
 // Each room has: { displays: Set, senders: Set }
@@ -13,6 +31,7 @@ function getRoom(name) {
 }
 
 wss.on("connection", (ws, req) => {
+  console.log(`New WebSocket connection from ${req.socket.remoteAddress}`);
   const url = new URL(req.url, `http://localhost:${PORT}`);
   const room = url.searchParams.get("room") || "default";
   const role = url.searchParams.get("role") || "sender";
@@ -42,4 +61,6 @@ wss.on("connection", (ws, req) => {
   });
 });
 
-console.log(`Relay server running on ws://localhost:${PORT}`);
+server.listen(PORT, () => {
+  console.log(`Relay server running on http://localhost:${PORT} (WebSocket ready)`);
+});
