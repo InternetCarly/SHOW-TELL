@@ -10,7 +10,7 @@
     body {
       background: #111;
       color: #fff;
-      font-family: sans-serif;
+      font-family: Consolas, monospace;
       height: 100vh;
       overflow: auto;
       padding: 16px;
@@ -135,7 +135,7 @@
       opacity: 0.5;
       color: #fff;
       z-index: 10;
-      font-family: monospace;
+      font-family: Consolas, monospace;
     }
     #clearWrapper {
       position: fixed;
@@ -214,7 +214,7 @@
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      font-family: sans-serif;
+      font-family: Consolas, monospace;
     }
     #confirmYes {
       background: #2a0000;
@@ -247,7 +247,7 @@
       <p>Clear all images?</p>
       <p class="sub">This can't be undone.</p>
       <div class="confirm-btns">
-        <button id="confirmNo">Go back</button>
+        <button id="confirmNo">Fuck, go back</button>
         <button id="confirmYes">Yes, Nuke em'</button>
       </div>
     </div>
@@ -378,7 +378,7 @@
       ws = new WebSocket(`${SERVER}?room=${room}&role=display`);
 
       ws.onopen = () => {
-        statusEl.textContent = `connected (room: ${room})`;
+        statusEl.textContent = `connected!`;
         statusEl.className = "connected";
         if (clearPending) {
           // Reconnected with a pending clear — re-send so server confirms and resets the flag
@@ -425,6 +425,12 @@
 
     nextBtn.addEventListener('click', () => {
       showFullscreen(currentIndex + 1);
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (fullscreen.style.display !== 'flex') return;
+      if (e.key === 'ArrowLeft') showFullscreen(currentIndex - 1);
+      if (e.key === 'ArrowRight') showFullscreen(currentIndex + 1);
     });
 
     closeBtn.addEventListener('click', hideFullscreen);

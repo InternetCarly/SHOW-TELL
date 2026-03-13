@@ -14,6 +14,7 @@ const mimeTypes = {
   ".png": "image/png",
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
+  ".gif": "image/gif",
   ".svg": "image/svg+xml",
   ".ico": "image/x-icon",
 };
@@ -125,6 +126,12 @@ wss.on("connection", (ws, req) => {
     const broadcastData = JSON.stringify({ images: r.images, metadata: r.metadata });
     for (const display of r.displays) {
       if (display.readyState === 1) display.send(broadcastData);
+    }
+    // Tell the sender their image made it to the display
+    try {
+      if (ws.readyState === 1) ws.send(JSON.stringify({ confirmed: true }));
+    } catch (e) {
+      console.warn(`[${room}] failed to send confirmation to sender:`, e.message);
     }
   });
 

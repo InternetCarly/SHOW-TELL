@@ -9,7 +9,7 @@
     body {
       background: #1a1a2e;
       color: #fff;
-      font-family: sans-serif;
+      font-family: Consolas, monospace;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -44,9 +44,129 @@
     label { display: inline-block; }
     input[type="file"] { display: none; }
     #feedback { font-size: 16px; min-height: 24px; }
+
+    #robotOverlay {
+      position: fixed;
+      inset: 0;
+      background: #1a1a2e;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      z-index: 999;
+    }
+    #robotOverlay.visible { display: flex; }
+    #robotOverlay img {
+      width: min(280px, 70vw);
+      border-radius: 12px;
+    }
+    #robotOverlay p {
+      font-size: 20px;
+      font-weight: 600;
+      text-align: center;
+      opacity: 0.9;
+    }
+    #robotOverlay .sub {
+      font-size: 14px;
+      opacity: 0.5;
+      font-weight: normal;
+    }
+
+    #infoBtn {
+      position: fixed;
+      bottom: 40px;
+      right: 40px;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      width: 48px;
+      height: 48px;
+      opacity: 0.5;
+      transition: opacity 0.15s;
+      z-index: 50;
+    }
+    #infoBtn:hover { opacity: 1; }
+    #infoBtn img { width: 150%; height: 150%; filter: brightness(0) invert(1); }
+
+    #infoOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 24px;
+    }
+    #infoOverlay.visible { display: flex; }
+    #infoBox {
+      background: #1e1e2e;
+      border-radius: 16px;
+      padding: 28px 28px 24px;
+      max-width: 480px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      position: relative;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.8);
+    }
+    #infoClose {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 22px;
+      cursor: pointer;
+      opacity: 0.5;
+      padding: 0;
+      line-height: 1;
+      width: auto;
+      height: auto;
+    }
+    #infoClose:hover { opacity: 1; }
+    #infoBox ul {
+      list-style: disc;
+      padding-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    #infoBox li {
+      font-size: 14px;
+      line-height: 1.6;
+      opacity: 0.85;
+    }
+    #infoBox .info-section {
+      margin-bottom: 20px;
+    }
+    #infoBox .info-section:last-child { margin-bottom: 0; }
+    #infoBox .roaches {
+      display: flex;
+      justify-content: center;
+      left: -12px;
+      gap: 8px;
+      margin-top: 20px;
+    }
+    #infoBox h3 {
+      font-size: 14px;
+      opacity: 0.4;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
+  <div id="robotOverlay">
+    <img src="/assets/dancingRobot.gif" alt="Dancing robot">
+    <p>Sending your image...</p>
+    <p class="sub">Hold tight while it loads on the display!</p>
+  </div>
+
   <div id="status" class="disconnected">connecting...</div>
 
   <label for="filePicker">Choose / Take Photo</label>
@@ -59,6 +179,63 @@
   <button id="sendBtn" >Send to Display</button>
 </div>
 <div id="feedback"></div>
+
+  <button id="infoBtn" aria-label="About this project">
+    <img src="/assets/information.svg" alt="">
+  </button>
+
+  <div id="infoOverlay">
+    <div id="infoBox">
+      <button id="infoClose" aria-label="Close">✕</button>
+
+      <div class="info-section">
+        <h3>What is this?</h3>
+        <ul>
+          <li>"SHOW &amp; TELL" is a real-time photo sharing website where you choose an image from your camera roll, write a description, and display it in front of a group of people. It's like social media, but like, actually social.</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>What do I send?</h3>
+        <ul>
+          <li><b>Anything!</b> A recent selfie with a story behind it, an art piece you're working on, a picture of an abandoned building, a topical meme, a childhood photo, an image taken moments before disaster, beautiful scenery, a concert pic from your favorite artist, a blurry pic from an insane party, cows on the side of the highway, etc.</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>Looking for</h3>
+        <ul>
+          <li>Aesthetically beautiful images</li>
+          <li>Thought-provoking images</li>
+          <li>Bizarre and absurd images</li>
+          <li>Storied images</li>
+          <li>Images that make people laugh</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>The idea</h3>
+        <ul>
+          <li>This project was born from my love of "playing camera roll" — the modern-day equivalent of flipping through a photo album and giving a full commentary on every single photo. If there's one thing about me, it's that I will find an excuse to whip out my phone and hold people hostage with my entire camera roll. With "SHOW &amp; TELL", we can <i>all</i> be that guy!</li>
+          <li>Let's play camera roll together!</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>Troubleshooting</h3>
+        <ul>
+          <li>Everyone needs to be connected to the same wifi for this to work. Check with the game host to see if you're connected to the right one!</li>
+          <li>If your image is taking forever to appear on the main screen, try refreshing the page. That can help mitigate potential bugs.</li>
+        </ul>
+      </div>
+
+      <div class="roaches">
+        <img src="assets/roach.gif" alt="Roach">
+        <img src="assets/roach.gif" alt="Roach">
+        <img src="assets/roach.gif" alt="Roach">
+      </div>
+    </div>
+  </div>
 
   <script>
     const params = new URLSearchParams(location.search);
@@ -78,20 +255,46 @@
 
     let ws = null;
     let imageData = null;
+    let confirmTimeout = null;
+    const robotOverlay = document.getElementById('robotOverlay');
+
+    function dismissRobot() {
+      clearTimeout(confirmTimeout);
+      confirmTimeout = null;
+      robotOverlay.classList.remove('visible');
+      imageData = null;
+      filePicker.value = '';
+      preview.src = '';
+      preview.style.display = 'none';
+      inputContainer.style.display = 'none';
+      descriptionEl.value = '';
+      nameEl.value = '';
+      feedback.textContent = 'Image received!';
+      updateSendButton();
+    }
 
     function connect() {
       ws = new WebSocket(`${SERVER}?room=${room}&role=sender`);
 
       ws.onopen = () => {
-        statusEl.textContent = `connected (room: ${room})`;
+        statusEl.textContent = `connected!`;
         statusEl.className = "connected";
         updateSendButton();
+      };
+
+      ws.onmessage = (e) => {
+        try {
+          const data = JSON.parse(e.data);
+          if (data && data.confirmed) setTimeout(dismissRobot, 1000); // extra length of robot animation after confirmation
+        } catch {}
       };
 
       ws.onclose = () => {
         statusEl.textContent = "disconnected — reconnecting...";
         statusEl.className = "disconnected";
         sendBtn.disabled = true;
+        clearTimeout(confirmTimeout);
+        robotOverlay.classList.remove('visible');
         setTimeout(connect, 2000);
       };
 
@@ -152,12 +355,23 @@
         name: nameEl.value.trim() || null
       };
       ws.send(JSON.stringify(message));
-      feedback.textContent = "Sent!";
+      robotOverlay.classList.add('visible');
       sendBtn.disabled = true;
-      setTimeout(() => { updateSendButton(); }, 1000);
+      feedback.textContent = '';
+      // Fallback: dismiss robot after 10s if server confirmation never arrives
+      confirmTimeout = setTimeout(dismissRobot, 10000);
     });
 
     connect();
+
+    const infoBtn = document.getElementById('infoBtn');
+    const infoOverlay = document.getElementById('infoOverlay');
+    const infoClose = document.getElementById('infoClose');
+    infoBtn.addEventListener('click', () => infoOverlay.classList.add('visible'));
+    infoClose.addEventListener('click', () => infoOverlay.classList.remove('visible'));
+    infoOverlay.addEventListener('click', (e) => {
+      if (e.target === infoOverlay) infoOverlay.classList.remove('visible');
+    });
   </script>
 </body>
 </html>
