@@ -59,8 +59,9 @@
   <script>
     const params = new URLSearchParams(location.search);
     const room = params.get("room") || "default";
-    const SERVER = params.get("server") || "ws://localhost:8080";
-    const MAX_WIDTH = 1280;
+    const DEFAULT_SERVER = (location.protocol === "https:" ? "wss:" : "ws:") + "//" + location.host;
+    const SERVER = params.get("server") || DEFAULT_SERVER;
+    const MAX_WIDTH = 720;
 
     const statusEl = document.getElementById("status");
     const filePicker = document.getElementById("filePicker");
@@ -104,7 +105,7 @@
           canvas.width = width;
           canvas.height = height;
           canvas.getContext("2d").drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL("image/jpeg", 0.6));
+          resolve(canvas.toDataURL("image/jpeg", 0.4));
         };
         img.src = URL.createObjectURL(file);
       });

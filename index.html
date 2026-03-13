@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Display</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -43,23 +44,55 @@
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.5);
     }
+        #qr-container {
+      position: fixed;
+      bottom: 16px;
+      background: rgba(0,0,0,0.8);
+      padding: 8px;
+      border-radius: 8px;
+      z-index: 10;
+    }
+    #qr-container canvas {
+      display: block;
+    }
+
   </style>
 </head>
 <body>
   <div id="status" class="disconnected">disconnected</div>
   <div id="waiting">Waiting for images...</div>
   <div id="images"></div>
+  <div id="qr-container"></div>
 
   <script>
     const params = new URLSearchParams(location.search);
     const room = params.get("room") || "default";
 
-    // Change this to your tunnel URL, e.g. wss://your-tunnel.ngrok-free.app
-    const SERVER = params.get("server") || "wss://utriculate-lilith-isorhythmic.ngrok-free.dev";
+    // Default to the same host/port as the page (works for local hosting).
+    const DEFAULT_SERVER = (location.protocol === "https:" ? "wss:" : "ws:") + "//" + location.host;
+    const SERVER = params.get("server") || DEFAULT_SERVER;
 
     const statusEl = document.getElementById("status");
     const waitingEl = document.getElementById("waiting");
     const imagesEl = document.getElementById("images");
+    const qrContainer = document.getElementById("qr-container");
+
+        // Generate QR code for send page
+    const sendUrl = `${location.protocol}//${location.host}/send.html?server=${SERVER}&room=${room}`;
+    console.log('Generating QR for:', sendUrl);
+    try {
+      new QRCode(qrContainer, {
+        text: sendUrl,
+        width: 128,
+        height: 128,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+      console.log('QR code generated successfully');
+    } catch (error) {
+      console.error('QR code generation failed:', error);
+    }
 
     function connect() {
       const ws = new WebSocket(`${SERVER}?room=${room}&role=display`);
