@@ -2,7 +2,7 @@
 
 A simple setup for sending images from phones to a shared display (TV/projector) in real time using WebSockets.
 
-**How it works:** Phones open `send.html` → user picks a photo → image is sent over WebSocket to a relay server → relay broadcasts to `display.html` → image appears on the big screen.
+**How it works:** Phones open `send.html` → user picks a photo → image is sent over WebSocket to a relay server → relay broadcasts to `index.html` → image appears on the big screen.
 
 ---
 

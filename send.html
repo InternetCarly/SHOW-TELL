@@ -52,9 +52,13 @@
   <label for="filePicker">Choose / Take Photo</label>
   <input type="file" id="filePicker" accept="image/*">
 
-  <img id="preview" alt="Preview">
-  <button id="sendBtn" disabled>Send to Display</button>
-  <div id="feedback"></div>
+<img id="preview" alt="Preview">
+<div id="formWrapper" style="display: none; flex-direction: column; align-items: center; gap: 12px; width: 80vw;">
+  <input type="text" id="description" placeholder="Enter description" style="width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 16px;">
+  <input type="text" id="name" placeholder="Your Name (optional)" style="width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 16px;">
+  <button id="sendBtn" >Send to Display</button>
+</div>
+<div id="feedback"></div>
 
   <script>
     const params = new URLSearchParams(location.search);
@@ -66,6 +70,9 @@
     const statusEl = document.getElementById("status");
     const filePicker = document.getElementById("filePicker");
     const preview = document.getElementById("preview");
+    const inputContainer = document.getElementById("formWrapper");
+    const descriptionEl = document.getElementById("description");
+    const nameEl = document.getElementById("name");
     const sendBtn = document.getElementById("sendBtn");
     const feedback = document.getElementById("feedback");
 
@@ -78,7 +85,7 @@
       ws.onopen = () => {
         statusEl.textContent = `connected (room: ${room})`;
         statusEl.className = "connected";
-        if (imageData) sendBtn.disabled = false;
+        updateSendButton();
       };
 
       ws.onclose = () => {
@@ -105,7 +112,11 @@
           canvas.width = width;
           canvas.height = height;
           canvas.getContext("2d").drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL("image/jpeg", 0.4));
+          let dataUrl = canvas.toDataURL("image/jpeg", 0.4);
+          if (!dataUrl.startsWith('data:')) {
+            dataUrl = `data:image/jpeg;base64,${dataUrl}`;
+          }
+          resolve(dataUrl);
         };
         img.src = URL.createObjectURL(file);
       });
@@ -119,17 +130,31 @@
       imageData = await resizeImage(file);
       preview.src = imageData;
       preview.style.display = "block";
+      inputContainer.style.display = "flex";
+      descriptionEl.value = ''; // Clear description for new image
       feedback.textContent = `Ready (${(imageData.length / 1024).toFixed(0)} KB)`;
 
-      if (ws && ws.readyState === 1) sendBtn.disabled = false;
+      updateSendButton();
     });
 
+    // Enable/disable send button based on description
+    descriptionEl.addEventListener("input", updateSendButton);
+
+    function updateSendButton() {
+      sendBtn.disabled = !imageData || !descriptionEl.value.trim() || (ws && ws.readyState !== 1);
+    }
+
     sendBtn.addEventListener("click", () => {
-      if (!imageData || !ws || ws.readyState !== 1) return;
-      ws.send(imageData);
+      if (!imageData || !descriptionEl.value.trim() || !ws || ws.readyState !== 1) return;
+      const message = {
+        image: imageData,
+        description: descriptionEl.value.trim(),
+        name: nameEl.value.trim() || null
+      };
+      ws.send(JSON.stringify(message));
       feedback.textContent = "Sent!";
       sendBtn.disabled = true;
-      setTimeout(() => { sendBtn.disabled = false; }, 1000);
+      setTimeout(() => { updateSendButton(); }, 1000);
     });
 
     connect();

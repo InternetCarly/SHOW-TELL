@@ -43,6 +43,61 @@
       object-fit: cover;
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      cursor: pointer;
+    }
+    #fullscreen {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 16px;
+      z-index: 20;
+    }
+    #fullscreen img {
+      max-width: 100vw;
+      max-height: 100vh;
+      border-radius: 12px;
+      box-shadow: 0 0 24px rgba(0,0,0,0.8);
+    }
+    #fullscreen .meta {
+      color: #fff;
+      text-align: center;
+      margin-top: 12px;
+      line-height: 1.4;
+      max-width: 90vw;
+    }
+    #fullscreen .nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.4);
+      border: none;
+      color: #fff;
+      font-size: 36px;
+      padding: 12px 16px;
+      cursor: pointer;
+      border-radius: 8px;
+      user-select: none;
+    }
+    #fullscreen .nav:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    #fullscreen .nav.prev { left: 16px; }
+    #fullscreen .nav.next { right: 16px; }
+    #fullscreen .close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(0,0,0,0.5);
+      border: none;
+      color: #fff;
+      font-size: 24px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
     }
         #qr-container {
       position: fixed;
@@ -63,6 +118,14 @@
   <div id="status" class="disconnected">disconnected</div>
   <div id="waiting">Waiting for images...</div>
   <div id="images"></div>
+
+  <div id="fullscreen">
+    <button class="close" aria-label="Close">✕</button>
+    <button class="nav prev" aria-label="Previous">‹</button>
+    <img id="fullscreenImage" alt="Fullscreen image">
+    <div class="meta" id="fullscreenMeta"></div>
+    <button class="nav next" aria-label="Next">›</button>
+  </div>
   <div id="qr-container"></div>
 
   <script>
@@ -77,6 +140,12 @@
     const waitingEl = document.getElementById("waiting");
     const imagesEl = document.getElementById("images");
     const qrContainer = document.getElementById("qr-container");
+    const fullscreen = document.getElementById("fullscreen");
+    const fullscreenImage = document.getElementById("fullscreenImage");
+    const fullscreenMeta = document.getElementById("fullscreenMeta");
+    const prevBtn = document.querySelector("#fullscreen .nav.prev");
+    const nextBtn = document.querySelector("#fullscreen .nav.next");
+    const closeBtn = document.querySelector("#fullscreen .close");
 
         // Generate QR code for send page
     const sendUrl = `${location.protocol}//${location.host}/send.html?server=${SERVER}&room=${room}`;
@@ -95,23 +164,73 @@
       console.error('QR code generation failed:', error);
     }
 
+    let images = [];
+    let metadata = [];
+    let currentIndex = 0;
+    let rotateTimer = null;
+
+    function loadMetadata() {
+      fetch('/metadata.json')
+        .then(r => r.json())
+        .then(data => {
+          metadata = Array.isArray(data) ? data : [];
+        })
+        .catch(() => {
+          metadata = [];
+        });
+    }
+
+    function showFullscreen(index) {
+      if (index < 0) index = images.length - 1;
+      if (index >= images.length) index = 0;
+      currentIndex = index;
+      fullscreenImage.src = images[currentIndex];
+      const meta = metadata[currentIndex] || {};
+      const desc = meta.description || '';
+      const name = meta.name ? `submitted by ${meta.name}` : '';
+      fullscreenMeta.textContent = [desc, name].filter(Boolean).join('\n');
+      fullscreen.style.display = 'flex';
+      resetRotateTimer();
+    }
+
+    function hideFullscreen() {
+      fullscreen.style.display = 'none';
+      clearRotateTimer();
+    }
+
+    function clearRotateTimer() {
+      if (rotateTimer) {
+        clearInterval(rotateTimer);
+        rotateTimer = null;
+      }
+    }
+
+    function resetRotateTimer() {
+      clearRotateTimer();
+      rotateTimer = setInterval(() => {
+        showFullscreen(currentIndex + 1);
+      }, 20000);
+    }
+
     function connect() {
       const ws = new WebSocket(`${SERVER}?room=${room}&role=display`);
 
       ws.onopen = () => {
         statusEl.textContent = `connected (room: ${room})`;
         statusEl.className = "connected";
+        loadMetadata();
       };
 
       ws.onmessage = (e) => {
         try {
-          const images = JSON.parse(e.data);
+          images = JSON.parse(e.data);
           imagesEl.innerHTML = '';
-          images.forEach(imgSrc => {
+          images.forEach((imgSrc, idx) => {
             const img = document.createElement('img');
-            img.src = imgSrc;
             img.className = 'image-item';
             img.alt = 'Received image';
+            img.src = imgSrc;
+            img.addEventListener('click', () => showFullscreen(idx));
             imagesEl.appendChild(img);
           });
           waitingEl.style.display = images.length ? "none" : "block";
@@ -128,6 +247,20 @@
 
       ws.onerror = () => ws.close();
     }
+
+    prevBtn.addEventListener('click', () => {
+      showFullscreen(currentIndex - 1);
+    });
+
+    nextBtn.addEventListener('click', () => {
+      showFullscreen(currentIndex + 1);
+    });
+
+    closeBtn.addEventListener('click', hideFullscreen);
+
+    fullscreen.addEventListener('click', (e) => {
+      if (e.target === fullscreen) hideFullscreen();
+    });
 
     connect();
   </script>

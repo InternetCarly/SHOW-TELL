@@ -51,11 +51,11 @@ const server = http.createServer((req, res) => {
 const wss = new WebSocketServer({ server });
 
 // Track clients by room and role
-// Each room has: { displays: Set, senders: Set, images: [] }
+// Each room has: { displays: Set, senders: Set, images: [], metadata: [] }
 const rooms = {};
 
 function getRoom(name) {
-  if (!rooms[name]) rooms[name] = { displays: new Set(), senders: new Set(), images: [] };
+  if (!rooms[name]) rooms[name] = { displays: new Set(), senders: new Set(), images: [], metadata: [] };
   return rooms[name];
 }
 
@@ -82,11 +82,23 @@ wss.on("connection", (ws, req) => {
   ws.on("message", (data) => {
     // Store image and broadcast all images from senders to all displays in the same room
     const msg = data.toString();
-    r.images.push(msg);
+    let imageObj;
+    try {
+      imageObj = JSON.parse(msg);
+    } catch (e) {
+      // Fallback for old format
+      imageObj = { image: msg, description: '', name: null };
+    }
+    r.images.push(imageObj.image);
+    r.metadata.push({ description: imageObj.description, name: imageObj.name });
     if (r.images.length > 50) {
       r.images.shift(); // remove oldest
+      r.metadata.shift();
     }
-    console.log(`[${room}] stored image (${(msg.length / 1024).toFixed(1)} KB), total: ${r.images.length}`);
+    const sizeKb = imageObj.image ? (imageObj.image.length / 1024).toFixed(1) : "0.0";
+    console.log(`[${room}] stored image (${sizeKb} KB) payload:`, msg.slice(0, 120));
+    // Write metadata to file
+    fs.writeFileSync(path.join(__dirname, 'metadata.json'), JSON.stringify(r.metadata, null, 2));
     const imagesData = JSON.stringify(r.images);
     for (const display of r.displays) {
       if (display.readyState === 1) display.send(imagesData);
