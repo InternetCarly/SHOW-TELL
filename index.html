@@ -53,21 +53,36 @@
       align-items: center;
       justify-content: center;
       flex-direction: column;
-      padding: 16px;
+      padding: 60px 16px 24px;
+      gap: 12px;
       z-index: 20;
     }
     #fullscreen img {
-      max-width: 100vw;
-      max-height: 100vh;
+      flex: 0 1 auto;
+      min-height: 60px;
+      max-width: 90vw;
+      max-height: 80vh;
+      object-fit: contain;
       border-radius: 12px;
       box-shadow: 0 0 24px rgba(0,0,0,0.8);
     }
     #fullscreen .meta {
+      flex: 0 0 auto;
       color: #fff;
       text-align: center;
-      margin-top: 12px;
-      line-height: 1.4;
       max-width: 90vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .meta-desc {
+      font-size: 16px;
+      line-height: 1.4;
+    }
+    .meta-name {
+      font-size: 14px;
+      opacity: 0.65;
     }
     #fullscreen .nav {
       position: absolute;
@@ -154,6 +169,68 @@
       transform: translate(0, 0) scale(1);
     }
 
+    #confirmOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    #confirmOverlay.visible {
+      display: flex;
+    }
+    #confirmBox {
+      background: #1e1e1e;
+      border-radius: 16px;
+      padding: 32px 36px;
+      max-width: 360px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.8);
+    }
+    #confirmBox p {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    #confirmBox .sub {
+      font-size: 13px;
+      opacity: 0.5;
+      margin-bottom: 28px;
+      font-weight: normal;
+    }
+    #confirmBox .confirm-btns {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+    #confirmBox button {
+      flex: 1;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: sans-serif;
+    }
+    #confirmYes {
+      background: #2a0000;
+      color: #ff4444;
+    }
+    #confirmYes:hover {
+      background: #3d0000;
+    }
+    #confirmNo {
+      background: #2e2e2e;
+      color: #999;
+    }
+    #confirmNo:hover {
+      background: #3a3a3a;
+    }
+
   </style>
 </head>
 <body>
@@ -164,6 +241,17 @@
   </div>
   <div id="waiting">Waiting for images...</div>
   <div id="images"></div>
+
+  <div id="confirmOverlay">
+    <div id="confirmBox">
+      <p>Clear all images?</p>
+      <p class="sub">This can't be undone.</p>
+      <div class="confirm-btns">
+        <button id="confirmNo">Go back</button>
+        <button id="confirmYes">Yes, Nuke em'</button>
+      </div>
+    </div>
+  </div>
 
   <div id="fullscreen">
     <button class="close" aria-label="Close">CLOSE</button>
@@ -247,7 +335,19 @@
       const meta = metadata[currentIndex] || {};
       const desc = meta.description || '';
       const name = meta.name ? `submitted by ${meta.name}` : '';
-      fullscreenMeta.textContent = [desc, name].filter(Boolean).join('\n');
+      fullscreenMeta.innerHTML = '';
+      if (desc) {
+        const d = document.createElement('span');
+        d.className = 'meta-desc';
+        d.textContent = desc;
+        fullscreenMeta.appendChild(d);
+      }
+      if (name) {
+        const n = document.createElement('span');
+        n.className = 'meta-name';
+        n.textContent = name;
+        fullscreenMeta.appendChild(n);
+      }
       fullscreen.style.display = 'flex';
       document.getElementById('clearWrapper').style.display = 'none';
       resetRotateTimer();
@@ -270,7 +370,7 @@
       clearRotateTimer();
       rotateTimer = setInterval(() => {
         showFullscreen(currentIndex + 1);
-      }, 20000);
+      }, 5000); //timer length
     }
 
     function connect() {
@@ -344,7 +444,22 @@
       }
     }
 
-    clearBtn.addEventListener('click', clearAllImages);
+    const confirmOverlay = document.getElementById('confirmOverlay');
+    const confirmYes = document.getElementById('confirmYes');
+    const confirmNo = document.getElementById('confirmNo');
+
+    clearBtn.addEventListener('click', () => {
+      confirmOverlay.classList.add('visible');
+    });
+
+    confirmYes.addEventListener('click', () => {
+      confirmOverlay.classList.remove('visible');
+      clearAllImages();
+    });
+
+    confirmNo.addEventListener('click', () => {
+      confirmOverlay.classList.remove('visible');
+    });
 
     connect();
   </script>
