@@ -33,74 +33,103 @@ npm --version
 > ```
 > Or just use **Command Prompt (cmd)** instead, which doesn't have this restriction.
 
-### 2. Install ngrok
+---
+
+## Setup (local network)
+
+You can run the relay server on your machine and access it from any device on the same Wi‑Fi network (no ngrok needed).
+
+### 1. Install dependencies & start the relay server
+
+From the project folder run:
+
+```bash
+npm install
+npm start
+```
+
+You should see:
+
+```
+Relay server running on http://localhost:8080 (WebSocket ready)
+✅ Serving static files from /path/to/project
+```
+
+Leave this terminal open.
+
+### 2. Find your local IP address
+
+On **macOS**, run:
+
+```bash
+ipconfig getifaddr en0
+```
+
+On **Windows**, run:
+
+```powershell
+ipconfig
+```
+
+Look for an address like `192.168.x.x` on your Wi‑Fi adapter.
+
+### 3. Open the pages on your phone (same Wi‑Fi)
+
+Use your computer’s IP in the URLs below.
+
+**Display (TV/projector):**
+
+```
+http://<YOUR_IP>:8080/index.html?server=ws://<YOUR_IP>:8080&room=myevent
+```
+
+**Send (phone):**
+
+```
+http://<YOUR_IP>:8080/send.html?server=ws://<YOUR_IP>:8080&room=myevent
+```
+
+> ✅ Make sure `server=` starts with `ws://` (not `ws:` or `wss://` unless you have TLS).
+
+---
+
+## Optional: Use ngrok for remote access
+
+If you want people to connect from outside your local network, you can still use ngrok (or another tunnel) as described below.
+
+### 1. Install ngrok (optional)
 
 1. Go to [https://ngrok.com](https://ngrok.com) and create a free account
 2. Download ngrok for your platform
-3. Unzip it and place the executable somewhere on your system (e.g. `C:\ngrok` on Windows or `/usr/local/bin` on Mac/Linux)
-4. Connect your account by running the command shown on your ngrok dashboard:
+3. Unzip it and place the executable somewhere on your system
+4. Connect your account:
    ```bash
    ngrok config add-authtoken YOUR_TOKEN_HERE
    ```
 
-**Verify it's installed:**
-```bash
-ngrok version
-```
-
----
-
-## Setup
-
-### 1. Start the relay server
-
-Open a terminal in the project folder and run:
-
-```bash
-npm init -y
-npm install ws
-node server.js
-```
-
-You should see: `Relay server running on ws://localhost:8080`
-
-Leave this terminal open.
-
 ### 2. Start the tunnel
 
-Open a **second terminal** and run:
+In a separate terminal run:
 
 ```bash
 ngrok http 8080
 ```
 
-ngrok will show a forwarding URL like:
+Copy the `https://...` forwarding URL.
 
-```
-Forwarding    https://abc123.ngrok-free.app -> http://localhost:8080
-```
+### 3. Open the pages
 
-Copy that `https://...` URL — you'll need it in the next step.
-
-### 3. Host the HTML files
-
-Push `display.html` and `send.html` to a GitHub Pages repo, or just open them directly from your file system for testing.
-
-### 4. Open the pages
-
-Replace `YOUR_NGROK_URL` below with the URL from step 2.
-
-**Display (open on the TV/projector):**
+**Display:**
 ```
 index.html?server=wss://YOUR_NGROK_URL&room=myevent
 ```
 
-**Send (share this link with phone users):**
+**Send:**
 ```
 send.html?server=wss://YOUR_NGROK_URL&room=myevent
 ```
 
-> **Important:** Use `wss://` (not `https://`) for the server parameter. Just replace `https://` with `wss://` from the ngrok URL.
+> **Important:** Use `wss://` (not `https://`) for the server parameter.
 
 ---
 

@@ -59,7 +59,7 @@
   <script>
     const params = new URLSearchParams(location.search);
     const room = params.get("room") || "default";
-    const SERVER = params.get("server") || "wss://utriculate-lilith-isorhythmic.ngrok-free.dev";
+    const SERVER = params.get("server") || "ws://localhost:8080";
     const MAX_WIDTH = 1280;
 
     const statusEl = document.getElementById("status");

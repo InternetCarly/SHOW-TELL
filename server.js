@@ -1,21 +1,50 @@
 const { WebSocketServer } = require("ws");
 const http = require("http");
+const fs = require("fs");
+const path = require("path");
 
 const PORT = process.env.PORT || 8080;
+const PUBLIC_DIR = path.join(__dirname);
 
-// Create an HTTP server
+const mimeTypes = {
+  ".html": "text/html",
+  ".js": "application/javascript",
+  ".css": "text/css",
+  ".json": "application/json",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".svg": "image/svg+xml",
+  ".ico": "image/x-icon",
+};
+
+// Simple static file server (serves index.html + send.html etc.)
 const server = http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/html' });
-  res.end(`
-    <!DOCTYPE html>
-    <html>
-    <head><title>WebSocket Server</title></head>
-    <body>
-      <h1>WebSocket server is running</h1>
-      <p>Ready for connections on port ${PORT}</p>
-    </body>
-    </html>
-  `);
+  const url = new URL(req.url, `http://localhost:${PORT}`);
+  let pathname = url.pathname;
+
+  // Default to index.html for the root
+  if (pathname === "/") pathname = "/index.html";
+
+  // Prevent directory traversal: normalize and require it stays in PUBLIC_DIR
+  const filePath = path.join(PUBLIC_DIR, path.normalize(pathname));
+  if (!filePath.startsWith(PUBLIC_DIR)) {
+    res.writeHead(400).end("Bad request");
+    return;
+  }
+
+  fs.readFile(filePath, (err, data) => {
+    if (err) {
+      res.writeHead(404, { "Content-Type": "text/plain" });
+      res.end("Not found\n");
+      return;
+    }
+
+    const ext = path.extname(filePath).toLowerCase();
+    const contentType = mimeTypes[ext] || "application/octet-stream";
+    res.writeHead(200, { "Content-Type": contentType });
+    res.end(data);
+  });
 });
 
 // Attach WebSocket server to the HTTP server
@@ -63,4 +92,5 @@ wss.on("connection", (ws, req) => {
 
 server.listen(PORT, () => {
   console.log(`Relay server running on http://localhost:${PORT} (WebSocket ready)`);
+  console.log(`✅ Serving static files from ${PUBLIC_DIR}`);
 });
