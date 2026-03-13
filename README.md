@@ -37,7 +37,7 @@ npm --version
 
 ## Setup (local network)
 
-You can run the relay server on your machine and access it from any device on the same Wi‑Fi network (no ngrok needed).
+You can run the relay server on your machine and access it from any device on the same Wi‑Fi network.
 
 ### 1. Install dependencies & start the relay server
 
@@ -93,46 +93,6 @@ http://<YOUR_IP>:8080/send.html?server=ws://<YOUR_IP>:8080&room=myevent
 
 ---
 
-## Optional: Use ngrok for remote access
-
-If you want people to connect from outside your local network, you can still use ngrok (or another tunnel) as described below.
-
-### 1. Install ngrok (optional)
-
-1. Go to [https://ngrok.com](https://ngrok.com) and create a free account
-2. Download ngrok for your platform
-3. Unzip it and place the executable somewhere on your system
-4. Connect your account:
-   ```bash
-   ngrok config add-authtoken YOUR_TOKEN_HERE
-   ```
-
-### 2. Start the tunnel
-
-In a separate terminal run:
-
-```bash
-ngrok http 8080
-```
-
-Copy the `https://...` forwarding URL.
-
-### 3. Open the pages
-
-**Display:**
-```
-index.html?server=wss://YOUR_NGROK_URL&room=myevent
-```
-
-**Send:**
-```
-send.html?server=wss://YOUR_NGROK_URL&room=myevent
-```
-
-> **Important:** Use `wss://` (not `https://`) for the server parameter.
-
----
-
 ## URL Parameters
 
 | Parameter | Description                    | Default       |
@@ -149,7 +109,7 @@ You can run multiple independent sessions by using different room names.
 | File           | What it does                                                    |
 |----------------|----------------------------------------------------------------|
 | `server.js`    | WebSocket relay — receives images from senders, broadcasts to displays |
-| `display.html` | Fullscreen display page — shows images as they arrive           |
+| `index.html`   | Fullscreen display page — shows images as they arrive           |
 | `send.html`    | Mobile-friendly sender page — pick/take a photo and send it     |
 
 ---
@@ -158,17 +118,16 @@ You can run multiple independent sessions by using different room names.
 
 - Images are automatically resized to 1280px wide on the phone before sending to keep transfers fast.
 - The display and sender pages will auto-reconnect if the connection drops.
-- For GitHub Pages hosting, the ngrok URL changes every time you restart ngrok (unless you're on a paid plan). You'll need to update the links you share each session.
-- ngrok's free tier shows a browser warning page on first visit — users may need to click through it once.
+- For local hosting, ensure all devices are on the same Wi‑Fi network.
 
 ---
 
 ## Quick Test (local only)
 
-If you just want to test on your own machine without ngrok:
+If you just want to test on your own machine:
 
-1. Run `node server.js`
-2. Open `display.html` in one browser tab
+1. Run `npm start`
+2. Open `index.html` in one browser tab
 3. Open `send.html` in another tab
 4. Pick an image and hit Send
 
