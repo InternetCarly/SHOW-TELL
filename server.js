@@ -51,11 +51,11 @@ const server = http.createServer((req, res) => {
 const wss = new WebSocketServer({ server });
 
 // Track clients by room and role
-// Each room has: { displays: Set, senders: Set }
+// Each room has: { displays: Set, senders: Set, images: [] }
 const rooms = {};
 
 function getRoom(name) {
-  if (!rooms[name]) rooms[name] = { displays: new Set(), senders: new Set() };
+  if (!rooms[name]) rooms[name] = { displays: new Set(), senders: new Set(), images: [] };
   return rooms[name];
 }
 
@@ -68,6 +68,11 @@ wss.on("connection", (ws, req) => {
   const r = getRoom(room);
   if (role === "display") {
     r.displays.add(ws);
+    // Send current images to new display
+    if (r.images.length > 0) {
+      const imagesData = JSON.stringify(r.images);
+      ws.send(imagesData);
+    }
   } else {
     r.senders.add(ws);
   }
@@ -75,11 +80,16 @@ wss.on("connection", (ws, req) => {
   console.log(`[${room}] ${role} connected (${r.displays.size} displays, ${r.senders.size} senders)`);
 
   ws.on("message", (data) => {
-    // Broadcast image data from senders to all displays in the same room
+    // Store image and broadcast all images from senders to all displays in the same room
     const msg = data.toString();
-    console.log(`[${room}] relaying image (${(msg.length / 1024).toFixed(1)} KB)`);
+    r.images.push(msg);
+    if (r.images.length > 50) {
+      r.images.shift(); // remove oldest
+    }
+    console.log(`[${room}] stored image (${(msg.length / 1024).toFixed(1)} KB), total: ${r.images.length}`);
+    const imagesData = JSON.stringify(r.images);
     for (const display of r.displays) {
-      if (display.readyState === 1) display.send(msg);
+      if (display.readyState === 1) display.send(imagesData);
     }
   });
 
