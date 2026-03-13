@@ -92,7 +92,7 @@ Replace `YOUR_NGROK_URL` below with the URL from step 2.
 
 **Display (open on the TV/projector):**
 ```
-display.html?server=wss://YOUR_NGROK_URL&room=myevent
+index.html?server=wss://YOUR_NGROK_URL&room=myevent
 ```
 
 **Send (share this link with phone users):**
