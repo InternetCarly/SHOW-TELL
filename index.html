@@ -137,37 +137,151 @@
       z-index: 10;
       font-family: Consolas, monospace;
     }
-    #clearWrapper {
+
+    #settingsBtn {
       position: fixed;
-      top: 0;
-      right: 0;
-      width: 60px;
-      height: 60px;
+      top: 16px;
+      right: 16px;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      width: 28px;
+      height: 28px;
+      opacity: 0.5;
+      transition: opacity 0.15s;
       z-index: 30;
     }
-    #clearBtn {
+    #settingsBtn:hover { opacity: 1; }
+    #settingsBtn img { width: 100%; height: 100%; filter: brightness(0) invert(1); }
+
+    #settingsOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 24px;
+    }
+    #settingsOverlay.visible { display: flex; }
+    #settingsBox {
+      background: #1e1e1e;
+      border-radius: 16px;
+      padding: 28px 28px 24px;
+      max-width: 360px;
+      width: 100%;
+      position: relative;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.8);
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    #settingsClose {
       position: absolute;
-      top: 0;
-      right: 0;
-      width: 50px;
-      height: 50px;
-      background: #c00;
-      color: #fff;
+      top: 14px;
+      right: 16px;
+      background: none;
       border: none;
-      border-radius: 6px;
+      color: #fff;
+      font-size: 22px;
       cursor: pointer;
-      font-size: 11px;
-      padding: 4px;
-      opacity: 0;
-      transform: translate(24px, -24px) scale(0);
-      transition: transform 0.1s ease, opacity 0.2s ease;
-      text-align: center;
-      line-height: 1.2;
+      opacity: 0.5;
+      padding: 0;
+      line-height: 1;
+      font-family: Consolas, monospace;
     }
-    #clearWrapper:hover #clearBtn {
+    #settingsClose:hover { opacity: 1; }
+    #settingsBox h2 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 0;
+    }
+    .setting-row {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .setting-label {
+      font-size: 13px;
+      opacity: 0.5;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .setting-label span {
       opacity: 1;
-      transform: translate(0, 0) scale(1);
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 13px;
+      color: #fff;
     }
+    #shuffleSlider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      border-radius: 2px;
+      background: #444;
+      outline: none;
+      cursor: pointer;
+    }
+    #shuffleSlider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      cursor: pointer;
+    }
+    #shuffleSlider::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      cursor: pointer;
+      border: none;
+    }
+    #themeInput {
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 8px;
+      color: #fff;
+      font-family: Consolas, monospace;
+      font-size: 14px;
+      padding: 10px 12px;
+      width: 100%;
+      outline: none;
+    }
+    #themeInput:focus { border-color: #888; }
+    #settingsClearBtn {
+      background: #2a0000;
+      color: #ff4444;
+      border: none;
+      border-radius: 10px;
+      font-family: Consolas, monospace;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 12px 16px;
+      cursor: pointer;
+      width: 100%;
+    }
+    #settingsClearBtn:hover { background: #3d0000; }
+    #settingsCloseBtn {
+      background: #2e2e2e;
+      color: #aaa;
+      border: none;
+      border-radius: 10px;
+      font-family: Consolas, monospace;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 12px 16px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: -10px;
+    }
+    #settingsCloseBtn:hover { background: #3a3a3a; }
 
     #confirmOverlay {
       position: fixed;
@@ -236,11 +350,35 @@
 <body>
   <div id="status" class="disconnected">disconnected</div>
   <div id="imageCount">0/50</div>
-  <div id="clearWrapper" aria-label="Clear all images">
-    <button id="clearBtn">CLEAR ALL IMAGES</button>
-  </div>
+  <button id="settingsBtn" aria-label="Settings">
+    <img src="/assets/settings.svg" alt="">
+  </button>
   <div id="waiting">Waiting for images...</div>
   <div id="images"></div>
+
+  <div id="settingsOverlay">
+    <div id="settingsBox">
+      <button id="settingsClose" aria-label="Close">✕</button>
+      <h2>Settings</h2>
+
+      <div class="setting-row">
+        <div class="setting-label">Image shuffle speed — <span id="shuffleLabel">5s per image</span></div>
+        <input type="range" id="shuffleSlider" min="0.1" max="15" step="0.1" value="5">
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-label">Theme</div>
+        <input type="text" id="themeInput" placeholder="e.g. nature, nostalgia, chaos...">
+      </div>
+
+      <div class="setting-row">
+        <button id="settingsClearBtn">Clear All Images</button>
+      </div>
+      <div class="setting-row">
+        <button id="settingsCloseBtn">Close Settings</button>
+      </div>
+    </div>
+  </div>
 
   <div id="confirmOverlay">
     <div id="confirmBox">
@@ -281,7 +419,7 @@
     const prevBtn = document.querySelector("#fullscreen .nav.prev");
     const nextBtn = document.querySelector("#fullscreen .nav.next");
     const closeBtn = document.querySelector("#fullscreen .close");
-    const clearBtn = document.getElementById("clearBtn");
+    const settingsBtn = document.getElementById("settingsBtn");
 
     let ws = null;
 
@@ -307,6 +445,7 @@
     let currentIndex = 0;
     let rotateTimer = null;
     let clearPending = false;
+    let shuffleSpeed = 5000;
 
     function renderImages() {
       imageCountEl.textContent = `${images.length}/50`;
@@ -349,13 +488,13 @@
         fullscreenMeta.appendChild(n);
       }
       fullscreen.style.display = 'flex';
-      document.getElementById('clearWrapper').style.display = 'none';
+      settingsBtn.style.display = 'none';
       resetRotateTimer();
     }
 
     function hideFullscreen() {
       fullscreen.style.display = 'none';
-      document.getElementById('clearWrapper').style.display = 'block';
+      settingsBtn.style.display = '';
       clearRotateTimer();
     }
 
@@ -370,7 +509,7 @@
       clearRotateTimer();
       rotateTimer = setInterval(() => {
         showFullscreen(currentIndex + 1);
-      }, 5000); //timer length
+      }, shuffleSpeed);
     }
 
     function connect() {
@@ -453,9 +592,31 @@
     const confirmOverlay = document.getElementById('confirmOverlay');
     const confirmYes = document.getElementById('confirmYes');
     const confirmNo = document.getElementById('confirmNo');
+    const settingsOverlay = document.getElementById('settingsOverlay');
+    const settingsClose = document.getElementById('settingsClose');
+    const shuffleSlider = document.getElementById('shuffleSlider');
+    const shuffleLabel = document.getElementById('shuffleLabel');
 
-    clearBtn.addEventListener('click', () => {
+    settingsBtn.addEventListener('click', () => settingsOverlay.classList.add('visible'));
+    settingsClose.addEventListener('click', () => settingsOverlay.classList.remove('visible'));
+    settingsOverlay.addEventListener('click', (e) => {
+      if (e.target === settingsOverlay) settingsOverlay.classList.remove('visible');
+    });
+
+    shuffleSlider.addEventListener('input', () => {
+      const secs = parseFloat(shuffleSlider.value);
+      shuffleSpeed = secs * 1000;
+      shuffleLabel.textContent = `${secs.toFixed(1)}s per image`;
+      if (rotateTimer) resetRotateTimer();
+    });
+
+    document.getElementById('settingsClearBtn').addEventListener('click', () => {
+      settingsOverlay.classList.remove('visible');
       confirmOverlay.classList.add('visible');
+    });
+
+    document.getElementById('settingsCloseBtn').addEventListener('click', () => {
+      settingsOverlay.classList.remove('visible');
     });
 
     confirmYes.addEventListener('click', () => {
