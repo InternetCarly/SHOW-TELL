@@ -29,13 +29,24 @@
       font-size: 24px;
       opacity: 0.4;
       text-align: center;
-      margin-top: 50vh;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    #logo-header {
+      text-align: center;
+      padding: 0px 0 8px;
+    }
+    #logo-header img {
+      max-height: 70px;
+      width: auto;
     }
     #images {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       gap: 16px;
-      padding-top: 40px;
+      padding-top: 16px;
     }
     .image-item {
       width: 100%;
@@ -353,6 +364,9 @@
   <button id="settingsBtn" aria-label="Settings">
     <img src="/assets/settings.svg" alt="">
   </button>
+  <div id="logo-header">
+    <img src="/assets/SHOWANDTELLLOGO.png" alt="Show and Tell">
+  </div>
   <div id="waiting">Waiting for images...</div>
   <div id="images"></div>
 

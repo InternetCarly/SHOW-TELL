@@ -7,7 +7,7 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: #1a1a2e;
+      background: #0b0e08;
       color: #fff;
       font-family: Consolas, monospace;
       min-height: 100vh;
@@ -30,18 +30,19 @@
       border-radius: 8px;
       display: none;
     }
-    button, label {
-      background: #4361ee;
-      color: #fff;
+    button:not(#infoClose):not(#infoBtn), label {
+      background: #4bff17;
+      color: #0b0e08;
       border: none;
       padding: 16px 32px;
-      border-radius: 12px;
+      border-radius: 10px;
       font-size: 18px;
       cursor: pointer;
       text-align: center;
+      /*box-shadow: 6px 6px 12px #0d0a1d, -6px -6px 12px #50415d;*/
     }
     button:disabled { opacity: 0.4; cursor: not-allowed; }
-    label { display: inline-block; }
+    label { display: inline-block; box-shadow: inset -5px 5px 2px rgba(255, 217, 0, 0.374), inset 5px -5px 2px rgba(0, 0, 0, 0.476); }
     input[type="file"] { display: none; }
     #feedback { font-size: 16px; min-height: 24px; }
 
@@ -103,31 +104,35 @@
     #infoOverlay.visible { display: flex; }
     #infoBox {
       background: #1e1e2e;
-      border-radius: 16px;
-      padding: 28px 28px 24px;
+      border-radius: 7px;
+      padding: 48px 28px 24px;
       max-width: 480px;
       width: 100%;
       max-height: 80vh;
       overflow-y: auto;
       position: relative;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.8);
+      box-shadow: inset -5px 5px 10px rgba(199, 159, 218, 0.179), inset 5px -5px 10px rgba(0, 0, 0, 0.476);
     }
     #infoClose {
       position: absolute;
-      top: 14px;
-      right: 16px;
-      background: none;
+      top: 12px;
+      right: 12px;
+      background: rgba(255,255,255,0.1);
       border: none;
       color: #fff;
-      font-size: 22px;
+      font-size: 13px;
       cursor: pointer;
-      opacity: 0.5;
+      opacity: 0.7;
       padding: 0;
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       line-height: 1;
-      width: auto;
-      height: auto;
     }
-    #infoClose:hover { opacity: 1; }
+    #infoClose:hover { opacity: 1; background: rgba(255,255,255,0.18); }
     #infoBox ul {
       list-style: disc;
       padding-left: 20px;
@@ -167,6 +172,9 @@
     <p class="sub">Hold tight while it loads on the display!</p>
   </div>
 
+  <img src="/assets/SHOWANDTELLLOGO.png" alt="Show &amp; Tell" style="position: fixed; top: 40px; left: 50%; transform: translateX(-50%); max-width: min(500px,85vw); width: 100%; z-index: 10;">
+  <p style="position: fixed; bottom: 16px; left: 20px; font-family: Consolas, monospace; color: #fff; font-size: 12px; opacity: 0.5;">made by carly mills</p>
+
   <div id="status" class="disconnected">connecting...</div>
 
   <label for="filePicker">Choose / Take Photo</label>
@@ -174,8 +182,8 @@
 
 <img id="preview" alt="Preview">
 <div id="formWrapper" style="display: none; flex-direction: column; align-items: center; gap: 12px; width: 80vw;">
-  <input type="text" id="description" placeholder="Tell us about your image!" style="width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 16px;">
-  <input type="text" id="name" placeholder="Your Name (optional)" style="width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 16px;">
+  <input type="text" id="description" placeholder="Tell us about your image!" style="width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 15px; font-family: Consolas, monospace;">
+  <input type="text" id="name" placeholder="Your Name (optional)" style="width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 15px; font-family: Consolas, monospace;">
   <button id="sendBtn" >Send to Display</button>
 </div>
 <div id="feedback"></div>
