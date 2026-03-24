@@ -93,6 +93,53 @@ http://<YOUR_IP>:8080/send.html?server=ws://<YOUR_IP>:8080&room=myevent
 
 ---
 
+## Running with ngrok (no shared Wi‑Fi needed)
+
+Use this method when devices can't reach your Mac directly — e.g. on a university/corporate network with client isolation, or when participants are on different networks.
+
+### 1. Start the relay server
+
+```bash
+npm start
+```
+
+### 2. In a second terminal, start ngrok
+
+```bash
+ngrok http 8080
+```
+
+You'll see output like:
+
+```
+Forwarding  https://abc123.ngrok-free.app -> http://localhost:8080
+```
+
+Copy the `https://` URL.
+
+### 3. Open the display page
+
+In your browser, go to:
+
+```
+https://<your-ngrok-url>/index.html
+```
+
+e.g. `https://abc123.ngrok-free.app/index.html`
+
+The page will auto-detect it's running over HTTPS and use `wss://` for the WebSocket. The QR code it generates will already contain the correct ngrok URL — just have participants scan it.
+
+### 4. Share the send link (or just use the QR code)
+
+```
+https://<your-ngrok-url>/send.html
+```
+
+> ✅ No `?server=` parameter needed — the pages detect the ngrok host automatically.
+> ⚠️ The free ngrok URL changes every time you restart ngrok. Regenerate the QR code each session.
+
+---
+
 ## URL Parameters
 
 | Parameter | Description                    | Default       |
