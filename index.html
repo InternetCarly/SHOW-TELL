@@ -7,6 +7,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    button, input { font-family: Consolas, monospace; }
     body {
       background: #0b0e08;
       color: #fff;
@@ -55,6 +56,11 @@
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.5);
       cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .image-item:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
     }
     #fullscreen {
       position: fixed;
@@ -147,7 +153,6 @@
       opacity: 0.5;
       color: #fff;
       z-index: 10;
-      font-family: Consolas, monospace;
     }
 
     #settingsBtn {
@@ -202,7 +207,6 @@
       opacity: 0.5;
       padding: 0;
       line-height: 1;
-      font-family: Consolas, monospace;
     }
     #settingsClose:hover { opacity: 1; }
     #settingsBox h2 {
@@ -260,7 +264,6 @@
       border: 1px solid #444;
       border-radius: 8px;
       color: #fff;
-      font-family: Consolas, monospace;
       font-size: 14px;
       padding: 10px 12px;
       width: 100%;
@@ -272,7 +275,6 @@
       color: #ff4444;
       border: none;
       border-radius: 10px;
-      font-family: Consolas, monospace;
       font-size: 14px;
       font-weight: 600;
       padding: 12px 16px;
@@ -285,7 +287,6 @@
       color: #aaa;
       border: none;
       border-radius: 10px;
-      font-family: Consolas, monospace;
       font-size: 14px;
       font-weight: 600;
       padding: 12px 16px;
@@ -340,7 +341,6 @@
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      font-family: Consolas, monospace;
     }
     #confirmYes {
       background: #2a0000;

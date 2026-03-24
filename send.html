@@ -6,6 +6,7 @@
   <title>Send Image</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    button, input { font-family: Consolas, monospace; }
     body {
       background: #0b0e08;
       color: #fff;
@@ -173,7 +174,7 @@
   </div>
 
   <img id="logo" src="/assets/SHOWANDTELLLOGO.png" alt="Show &amp; Tell" style="position: fixed; top: 40px; left: 50%; transform: translateX(-50%); max-width: min(500px,85vw); width: 100%; z-index: 10;">
-  <p style="position: fixed; bottom: 16px; left: 20px; font-family: Consolas, monospace; color: #fff; font-size: 12px; opacity: 0.5;">made by carly mills</p>
+  <p style="position: fixed; bottom: 16px; left: 20px; color: #fff; font-size: 12px; opacity: 0.5;">made by carly mills</p>
 
   <div id="status" class="disconnected">connecting...</div>
 
@@ -182,8 +183,8 @@
 
 <img id="preview" alt="Preview">
 <div id="formWrapper" style="display: none; flex-direction: column; align-items: center; gap: 12px; width: 80vw;">
-  <input type="text" id="description" placeholder="Tell us about your image!" style="width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 15px; font-family: Consolas, monospace;">
-  <input type="text" id="name" placeholder="Your Name (optional)" style="width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 15px; font-family: Consolas, monospace;">
+  <input type="text" id="description" placeholder="Tell us about your image!" style="width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 15px;">
+  <input type="text" id="name" placeholder="Your Name (optional)" style="width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 15px;">
   <button id="sendBtn" >Send to Display</button>
 </div>
 <div id="feedback"></div>
