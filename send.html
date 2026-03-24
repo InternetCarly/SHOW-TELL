@@ -172,7 +172,7 @@
     <p class="sub">Hold tight while it loads on the display!</p>
   </div>
 
-  <img src="/assets/SHOWANDTELLLOGO.png" alt="Show &amp; Tell" style="position: fixed; top: 40px; left: 50%; transform: translateX(-50%); max-width: min(500px,85vw); width: 100%; z-index: 10;">
+  <img id="logo" src="/assets/SHOWANDTELLLOGO.png" alt="Show &amp; Tell" style="position: fixed; top: 40px; left: 50%; transform: translateX(-50%); max-width: min(500px,85vw); width: 100%; z-index: 10;">
   <p style="position: fixed; bottom: 16px; left: 20px; font-family: Consolas, monospace; color: #fff; font-size: 12px; opacity: 0.5;">made by carly mills</p>
 
   <div id="status" class="disconnected">connecting...</div>
@@ -275,6 +275,7 @@
       preview.src = '';
       preview.style.display = 'none';
       inputContainer.style.display = 'none';
+      logo.style.display = '';
       descriptionEl.value = '';
       nameEl.value = '';
       feedback.textContent = 'Image received!';
@@ -333,10 +334,13 @@
       });
     }
 
+    const logo = document.getElementById("logo");
+
     filePicker.addEventListener("change", async (e) => {
       const file = e.target.files[0];
       if (!file) return;
 
+      logo.style.display = "none";
       feedback.textContent = "Resizing...";
       imageData = await resizeImage(file);
       preview.src = imageData;
