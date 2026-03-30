@@ -36,12 +36,26 @@
       transform: translate(-50%, -50%);
     }
     #logo-header {
-      text-align: center;
+      display: flex;
+      align-items: center;
       padding: 0px 0 8px;
     }
     #logo-header img {
       max-height: 70px;
       width: auto;
+      flex-shrink: 0;
+    }
+    #theme-display {
+      color:#4f4;
+      flex: 1;
+      font-size: 30px;
+      text-align: left;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #logo-spacer {
+      flex: 1;
     }
     #images {
       display: grid;
@@ -366,7 +380,9 @@
     <img src="/assets/settings.svg" alt="">
   </button>
   <div id="logo-header">
+    <div id="theme-display"></div>
     <img src="/assets/SHOWANDTELLLOGO.png" alt="Show and Tell">
+    <div id="logo-spacer"></div>
   </div>
   <div id="waiting">Waiting for images...</div>
   <div id="images"></div>
@@ -383,7 +399,7 @@
 
       <div class="setting-row">
         <div class="setting-label">Theme</div>
-        <input type="text" id="themeInput" placeholder="e.g. nature, nostalgia, chaos...">
+        <input type="text" id="themeInput" placeholder="e.g. pets, color, nature, memes...">
       </div>
 
       <div class="setting-row">
@@ -435,6 +451,7 @@
     const nextBtn = document.querySelector("#fullscreen .nav.next");
     const closeBtn = document.querySelector("#fullscreen .close");
     const settingsBtn = document.getElementById("settingsBtn");
+    const themeDisplay = document.getElementById("theme-display");
 
     let ws = null;
 
@@ -444,8 +461,8 @@
     try {
       new QRCode(qrContainer, {
         text: sendUrl,
-        width: 128,
-        height: 128,
+        width: 175,
+        height: 175,
         colorDark: "#000000",
         colorLight: "#ffffff",
         correctLevel: QRCode.CorrectLevel.H
@@ -611,6 +628,18 @@
     const settingsClose = document.getElementById('settingsClose');
     const shuffleSlider = document.getElementById('shuffleSlider');
     const shuffleLabel = document.getElementById('shuffleLabel');
+    const themeInput = document.getElementById('themeInput');
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('showtell_theme') || '';
+    themeInput.value = savedTheme;
+    themeDisplay.textContent = savedTheme ? `Theme: ${savedTheme}` : '';
+
+    themeInput.addEventListener('input', () => {
+      const val = themeInput.value.trim();
+      themeDisplay.textContent = val ? `Theme: ${val}` : '';
+      localStorage.setItem('showtell_theme', themeInput.value);
+    });
 
     settingsBtn.addEventListener('click', () => settingsOverlay.classList.add('visible'));
     settingsClose.addEventListener('click', () => settingsOverlay.classList.remove('visible'));
