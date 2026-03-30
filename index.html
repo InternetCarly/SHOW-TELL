@@ -296,6 +296,19 @@
       width: 100%;
     }
     #settingsClearBtn:hover { background: #3d0000; }
+    #settingsHideQrBtn {
+      background: #2e2e2e;
+      color: #aaa;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 12px 16px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: -10px;
+    }
+    #settingsHideQrBtn:hover { background: #002a47; }
     #settingsCloseBtn {
       background: #2e2e2e;
       color: #aaa;
@@ -404,6 +417,9 @@
 
       <div class="setting-row">
         <button id="settingsClearBtn">Clear All Images</button>
+      </div>
+      <div class="setting-row">
+        <button id="settingsHideQrBtn">Hide QR Code</button>
       </div>
       <div class="setting-row">
         <button id="settingsCloseBtn">Close Settings</button>
@@ -632,13 +648,18 @@
 
     // Load saved theme
     const savedTheme = localStorage.getItem('showtell_theme') || '';
-    themeInput.value = savedTheme;
-    themeDisplay.textContent = savedTheme ? `Theme: ${savedTheme}` : '';
+    themeInput.value = '';
+    themeDisplay.textContent = '';
 
     themeInput.addEventListener('input', () => {
       const val = themeInput.value.trim();
       themeDisplay.textContent = val ? `Theme: ${val}` : '';
       localStorage.setItem('showtell_theme', themeInput.value);
+    });
+    themeInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && themeInput.value.trim()) {
+        settingsOverlay.classList.remove('visible');
+      }
     });
 
     settingsBtn.addEventListener('click', () => settingsOverlay.classList.add('visible'));
@@ -657,6 +678,14 @@
     document.getElementById('settingsClearBtn').addEventListener('click', () => {
       settingsOverlay.classList.remove('visible');
       confirmOverlay.classList.add('visible');
+    });
+
+    const hideQrBtn = document.getElementById('settingsHideQrBtn');
+    let qrHidden = false;
+    hideQrBtn.addEventListener('click', () => {
+      qrHidden = !qrHidden;
+      qrContainer.style.display = qrHidden ? 'none' : '';
+      hideQrBtn.textContent = qrHidden ? 'Show QR Code' : 'Hide QR Code';
     });
 
     document.getElementById('settingsCloseBtn').addEventListener('click', () => {
